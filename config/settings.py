@@ -17,18 +17,23 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-development-key')
 
 # Environment detection
 DEBUG = os.getenv('DJANGO_DEBUG', 'False') == 'True'
+print(DEBUG)
 
 # Host settings
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',')
 
-CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', 'https://localhost').split(',')
+if DEBUG:
+    ALLOWED_HOSTS = ('*').split(',')
+else:
+    ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS').split(',')
 
 
+CSRF_TRUSTED_ORIGINS = os.getenv('DJANGO_CSRF_TRUSTED_ORIGINS', 'http://localhost').split(',')
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -37,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'palettes',
-    'corsheaders',
     'drf_yasg',
     'whitenoise.runserver_nostatic', 
 ]
@@ -148,9 +152,13 @@ if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # CORS settings
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # Only in development
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOW_ALL_ORIGINS = DEBUG  # True in development, False in production
+
 if not DEBUG:
     CORS_ALLOWED_ORIGINS = os.getenv('DJANGO_CORS_ALLOWED_ORIGINS', '').split(',')
+
 
 # REST Framework settings
 REST_FRAMEWORK = {
@@ -167,7 +175,7 @@ REST_FRAMEWORK = {
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend' if not DEBUG else 'django.core.mail.backends.console.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
 EMAIL_PORT = os.getenv('EMAIL_PORT', 587)
-EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', True)
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 
@@ -188,7 +196,7 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 #         },
 #         'file': {
 #             'class': 'logging.FileHandler',
-#             'filename': BASE_DIR / 'logs' / 'django.log',
+#             'filename': os.path.join(BASE_DIR, 'django.log')
 #             'formatter': 'verbose',
 #         },
 #     },
